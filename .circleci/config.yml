@@ -1,0 +1,71 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/url-shortener
+    docker:
+      - image: circleci/ruby:2.5.7-browsers
+        environment:
+          PROTOCOL: 'http'
+          HOST: 'test.host'
+      - image: circleci/postgres:10.5-alpine
+        environment:
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: gb_test
+          POSTGRES_PASSWORD: ""
+          TZ: "/usr/share/zoneinfo/Etc/UTC"
+    steps:
+      - checkout
+
+      # Use latest Chrome version
+      - run: #STABLE
+          name: Install Chromedriver latest version
+          command: |
+            sudo apt-get update
+            sudo apt-get install lsb-release libappindicator3-1
+            curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo dpkg -i google-chrome.deb
+            sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome/google-chrome
+            rm google-chrome.deb
+
+      # Restore bundle cache
+      - type: cache-restore
+        key: rails-url-shorenter{{ checksum "Gemfile.lock" }}
+
+
+      # Bundle install dependencies
+      - run: bundle install --path vendor/bundle
+
+      # Store bundle cache
+      - type: cache-save
+        key: rails-url-shorenter{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
+
+      # Database setup
+      - run: bundle exec rake db:create RAILS_ENV=test
+      - run: bundle exec rake db:migrate RAILS_ENV=test
+      - run: bundle exec rake assets:precompile RAILS_ENV=test
+
+      # Run rspec
+      # - type: shell
+      #   command: bundle exec rspec --tag focus
+      - type: shell
+        command: |
+          bundle exec rspec --tag ~js \
+                            --profile 10 \
+                            --format RspecJunitFormatter \
+                            --out /tmp/test-results/rspec.xml \
+                            --format progress \
+                            $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+      - type: shell
+        command: |
+          bundle exec rspec --tag js \
+                            --profile 10 \
+                            --format RspecJunitFormatter \
+                            --out /tmp/test-results/rspec.xml \
+                            --format progress \
+                            $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+
+      # Save artifacts
+      - type: store_test_results
+        path: /tmp/test-results

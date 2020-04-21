@@ -7,7 +7,7 @@ class ShortUrl < ActiveRecord::Base
   before_validation :generate_random_slug, if: Proc.new{|u| u.slug.blank?}
 
   def sharing_url
-    "#{ENV['protocal']}://#{ENV['host']}/#{slug}"
+    "#{ENV['PROTOCOL']}://#{ENV['HOST']}/#{slug}"
   end
 
   def expire!

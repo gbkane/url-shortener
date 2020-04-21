@@ -60,6 +60,6 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  ENV['protocal'] = 'http'
-  ENV['host'] = 'localhost:3000'
+  ENV['PROTOCOL'] = 'http'
+  ENV['HOST'] = 'localhost:3000'
 end
