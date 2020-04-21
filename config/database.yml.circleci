@@ -1,0 +1,6 @@
+test:
+  database: circle_ruby_test
+  adapter: postgresql
+  pool: 50
+  username: ubuntu
+  host: localhost

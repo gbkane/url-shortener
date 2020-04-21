@@ -5,6 +5,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.5.7-browsers
         environment:
+          RAILS_ENV: test
           PROTOCOL: 'http'
           HOST: 'test.host'
       - image: circleci/postgres:10.5-alpine
@@ -15,57 +16,26 @@ jobs:
           TZ: "/usr/share/zoneinfo/Etc/UTC"
     steps:
       - checkout
-
-      # Use latest Chrome version
-      - run: #STABLE
-          name: Install Chromedriver latest version
+      - run:
+          name: Update bundler
+          command: gem install bundler -v 2.1.4
+      - restore_cache:
+          key: dependency-cache-{{ checksum "Gemfile.lock"}}
+      - run:
+          name: Install dependencies
+          command: bundle install
+      - save_cache:
+          key: dependency-cache-{{ checksum "Gemfile.lock"}}
+          paths: vendor/bundle
+      - run:
+          name: Database Setup
           command: |
-            sudo apt-get update
-            sudo apt-get install lsb-release libappindicator3-1
-            curl -L -o google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-            sudo dpkg -i google-chrome.deb
-            sudo sed -i 's|HERE/chrome"|HERE/chrome" --no-sandbox|g' /opt/google/chrome/google-chrome
-            rm google-chrome.deb
-
-      # Restore bundle cache
-      - type: cache-restore
-        key: rails-url-shorenter{{ checksum "Gemfile.lock" }}
-
-
-      # Bundle install dependencies
-      - run: bundle install --path vendor/bundle
-
-      # Store bundle cache
-      - type: cache-save
-        key: rails-url-shorenter{{ checksum "Gemfile.lock" }}
-        paths:
-          - vendor/bundle
-
-      # Database setup
-      - run: bundle exec rake db:create RAILS_ENV=test
-      - run: bundle exec rake db:migrate RAILS_ENV=test
-      - run: bundle exec rake assets:precompile RAILS_ENV=test
-
-      # Run rspec
-      # - type: shell
-      #   command: bundle exec rspec --tag focus
-      - type: shell
-        command: |
-          bundle exec rspec --tag ~js \
-                            --profile 10 \
-                            --format RspecJunitFormatter \
-                            --out /tmp/test-results/rspec.xml \
-                            --format progress \
-                            $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
-      - type: shell
-        command: |
-          bundle exec rspec --tag js \
-                            --profile 10 \
-                            --format RspecJunitFormatter \
-                            --out /tmp/test-results/rspec.xml \
-                            --format progress \
-                            $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
-
-      # Save artifacts
-      - type: store_test_results
-        path: /tmp/test-results
+            mv config/database.yml.circleci config/database.yml
+            bundle exec rake db:create RAILS_ENV=test
+            bundle exec rake db:migrate RAILS_ENV=test
+      - run:
+          name: Test
+          command: bundle exec rspec
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
