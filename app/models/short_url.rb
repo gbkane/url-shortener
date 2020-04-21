@@ -11,6 +11,7 @@ class ShortUrl < ActiveRecord::Base
   end
 
   def expire!
+    return true if expired?
     self.expired_at = Time.current
     save!
   end
