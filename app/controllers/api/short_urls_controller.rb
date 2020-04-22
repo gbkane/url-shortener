@@ -1,7 +1,7 @@
 class Api::ShortUrlsController < Api::BaseController
   before_action :load_resource, except: [:index, :create]
   def index
-    @short_urls = ShortUrl.order(created_at: :desc).page(params[:page])
+    @short_urls = ShortUrl.order(id: :desc).page(params[:page])
     render :index
   end
 
