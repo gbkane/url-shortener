@@ -4,9 +4,17 @@
 ## Running the application
 
 This application is set to run locally on `localhost:3000`. To use a different
-port, please edit the `ENV['HOST']` in `config/environments/development.rb`
+host (or port), please edit the `ENV['HOST']` in
+`config/environments/development.rb`
 
-To start the application run
+**Setup**
+
+```
+bundle install
+bundle exec rake db:setup
+```
+
+**Run the webserver**
 
 ```
 rails s

@@ -5,9 +5,17 @@ This application takes a full url and returns a short version that can be copied
 ## Running the application
 
 This application is set to run locally on `localhost:3000`. To use a different
-port, please edit the `ENV['HOST']` in `config/environments/development.rb`
+host (or port), please edit the `ENV['HOST']` in
+`config/environments/development.rb`
 
-To start the application run
+**Setup**
+
+```
+bundle install
+bundle exec rake db:setup
+```
+
+**Run the webserver**
 
 ```
 rails s
@@ -20,6 +28,7 @@ The test suite uses RSpec. To run the specs run
 ```
 bundle exec rspec
 ```
+
 ## Usage
 
 Shortened URLs can be entered directly into the browser and will redirect to
