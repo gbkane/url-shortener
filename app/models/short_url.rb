@@ -6,6 +6,8 @@ class ShortUrl < ActiveRecord::Base
 
   before_validation :generate_random_slug, if: Proc.new{|u| u.slug.blank?}
 
+  scope :active, ->{ where('expired_at IS NULL') }
+
   def sharing_url
     "#{ENV['PROTOCOL']}://#{ENV['HOST']}/#{slug}"
   end
@@ -18,6 +20,10 @@ class ShortUrl < ActiveRecord::Base
 
   def expired?
     expired_at.present?
+  end
+
+  def active?
+    !expired?
   end
 
   private

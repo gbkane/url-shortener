@@ -32,6 +32,7 @@ RSpec.describe ShortUrl, type: :model do
   context '#expires!' do
     let!(:url) { create(:url) }
     it 'expires an acitve url' do
+      expect(url.active?).to be true
       url.expire!
       expect(url.reload.expired?).to be true
     end
