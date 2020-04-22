@@ -3,9 +3,10 @@ jobs:
   build:
     working_directory: ~/url-shortener
     docker:
-      - image: circleci/ruby:2.5.7-browsers
+      - image: circleci/ruby:2.5.7-stretch-node-browsers
         environment:
           RAILS_ENV: test
+          NODE_ENV: test
           PROTOCOL: 'http'
           HOST: 'test.host'
       - image: circleci/postgres:10.5-alpine
@@ -27,6 +28,17 @@ jobs:
       - save_cache:
           key: dependency-cache-{{ checksum "Gemfile.lock"}}
           paths: vendor/bundle
+      - restore_cache:
+          keys:
+            - yarn-cache-{{ checksum "yarn.lock" }}
+            - yarn-cache-
+      - run:
+          name: Yarn Install
+          command: yarn install --cache-folder ~/.cache/yarn
+      - save_cache:
+          key: yarn-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
       - run:
           name: Database Setup
           command: |
