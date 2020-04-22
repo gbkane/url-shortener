@@ -13,3 +13,22 @@
  *= require_tree .
  *= require_self
  */
+code {
+  padding: 3px;
+  background-color: #eeeeee;
+}
+pre > code {
+  padding: 10px;
+}
+table.code-table td {
+  background-color: #eeeeee;
+  padding: 5px;
+}
+div.pretty-json {
+  font-family: monospace;
+  background-color: #eeeeee;
+  padding: 10px;
+}
+div.pretty-json div {
+  padding: 3px 20px;
+}
